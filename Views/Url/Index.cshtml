@@ -1,0 +1,128 @@
+@{
+    Layout = "_DecodersLayout";
+}
+<div class="row">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+             <h3 class="panel-title">Encoded</h3>
+        </div>
+        <div class="panel-body">
+            <div id="encoded"></div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <a asp-controller="Url" asp-action="Decode" class="btn btn-default" role="button" id="decode">Decode</a>
+    <a asp-controller="Url" asp-action="Base64UrlDecode" class="btn btn-default" role="button" id="base64UrlDecode">Base64UrlDecode</a>
+    <a asp-controller="Url" asp-action="Base36UrlDecode" class="btn btn-default" role="button" id="base36UrlDecode">Base 36 to Base 10</a>    
+</div>
+<br/>
+
+<div class="row">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+             <h3 class="panel-title">Decoded</h3>
+        </div>
+        <div class="panel-body">
+            <div id="decoded"></div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <a asp-controller="Url" asp-action="Encode" class="btn btn-default" role="button" id="encode">Encode</a>
+    <a asp-controller="Url" asp-action="Base64UrlEncode" class="btn btn-default" role="button" id="base64UrlEncode">Base64UrlEncode</a>    
+    <a asp-controller="Url" asp-action="Base36UrlEncode" class="btn btn-default" role="button" id="base36UrlEncode">Base 10 to Base 36</a>       
+</div>
+
+    <style>
+#encoded {
+    height: 300px;
+}
+
+#decoded {
+    height: 300px;
+}
+
+    </style>
+
+@section scripts {
+<script src="ace-min-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>
+
+    <script>
+        var encoded = ace.edit("encoded");
+        encoded.setTheme("ace/theme/twilight");
+
+        var decoded = ace.edit("decoded");
+        decoded.setTheme("ace/theme/twilight");
+
+        //editor.session.setMode("ace/mode/json");
+    </script>
+
+    <script>
+        $("#encode, #decode, #base64UrlEncode, #base64UrlDecode, #base36UrlEncode, #base36UrlDecode").on("click", function (e) {
+            var clicked = this;
+
+            if ($(clicked).data("clicked")) {
+                return true;
+            }
+
+            $(clicked).data("clicked", true);
+            e.preventDefault();
+
+            var getValue;
+            var setValue;
+            var url;
+
+            if ($(clicked).attr("id") == "encode") {
+                getValue = "decoded";
+                setValue = "encoded";
+                url = "/Url/Encode";
+            } else if ($(clicked).attr("id") == "decode") {
+                getValue = "encoded";
+                setValue = "decoded";
+                url = "/Url/Decode";             
+            } else if ($(clicked).attr("id") == "base64UrlEncode") {
+                getValue = "decoded";
+                setValue = "encoded";
+                url = "/Url/Base64UrlEncode";
+            } else if ($(clicked).attr("id") == "base64UrlDecode") {
+                getValue = "encoded";
+                setValue = "decoded";
+                url = "/Url/Base64UrlDecode";
+            } else if ($(clicked).attr("id") == "base36UrlEncode") {
+                getValue = "decoded";
+                setValue = "encoded";
+                url = "/Url/Base36UrlEncode";
+            } else if ($(clicked).attr("id") == "base36UrlDecode") {
+                getValue = "encoded";
+                setValue = "decoded";
+                url = "/Url/Base36UrlDecode";
+            }
+
+            $.ajax({
+                type: "POST",
+                url: url,
+                data: JSON.stringify({ data: ace.edit(getValue).getValue() }),
+                dataType: "json",
+                contentType: "application/json",
+                success: function(data) {
+                    if (data.error) {
+                        $("#alert-msg").html(data.error);
+
+                        $("#alert").show();
+                        return;
+                    }
+                    
+                    ace.edit(setValue).setValue(data.data);
+                },
+                complete: function() {
+                    $(clicked).data("clicked", false);
+                }                
+            });  
+
+            return true;
+        });                  
+    </script>
+}

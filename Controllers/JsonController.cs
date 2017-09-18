@@ -46,7 +46,13 @@ namespace DecodeStuff.Controllers
                 }
                 var o = JObject.Parse(j);
 
-                var json = JObject.Parse((string)o["data"]);
+                object json;
+
+                try {
+                    json = JObject.Parse((string)o["data"]);
+                } catch (Exception ex) {
+                    json = JArray.Parse((string)o["data"]);
+                }
 
                 return JsonConvert.SerializeObject(new { data = JsonConvert.SerializeObject(json, Formatting.Indented) });
             } catch (Exception e) {
@@ -67,7 +73,13 @@ namespace DecodeStuff.Controllers
                 }
                 var o = JObject.Parse(j);
 
-                var json = JObject.Parse((string)o["data"]);
+                object json;
+
+                try {
+                    json = JObject.Parse((string)o["data"]);
+                } catch (Exception ex) {
+                    json = JArray.Parse((string)o["data"]);
+                }
 
                 return JsonConvert.SerializeObject(new { data = JsonConvert.SerializeObject(json, Formatting.None) });
             } catch (Exception e) {

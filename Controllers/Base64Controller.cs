@@ -69,7 +69,6 @@ namespace DecodeStuff.Controllers
                 }
                 var o = JObject.Parse(j);
 
-                var encoded = System.Text.Encoding.UTF8.GetBytes((string)o["data"]);
                 var unencoded = System.Text.Encoding.UTF8.GetString(System.Convert.FromBase64String((string)o["data"]));
 
                 return JsonConvert.SerializeObject(new { data = unencoded });
