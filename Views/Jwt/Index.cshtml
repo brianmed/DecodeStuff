@@ -1,0 +1,104 @@
+@{
+    Layout = "_DecodersLayout";
+}
+
+Not 100% sure if this is accurate.. ¯\_(ツ)_/¯
+<br/>
+
+<div class="row">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+             <h3 class="panel-title">JWT</h3>
+        </div>
+        <div class="panel-body">
+            <div id="jwt"></div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <a asp-controller="Jwt" asp-action="Validate" class="btn btn-default" role="button" id="validate">Validate</a>
+</div>
+<br/>
+
+<div class="row">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+             <h3 class="panel-title">Raw</h3>
+        </div>
+        <div class="panel-body">
+            <div id="raw"></div>
+        </div>
+    </div>
+</div>
+
+
+    <style>
+        #jwt {
+            height: 300px;
+        }
+
+        #raw {
+            height: 300px;
+        }
+    </style>
+
+@section scripts {
+    <script src="ace-min-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>
+
+    <script>
+        var jwt = ace.edit("jwt");
+        jwt.setTheme("ace/theme/twilight");
+
+        var raw = ace.edit("raw");
+        raw.setTheme("ace/theme/twilight");
+
+        //editor.session.setMode("ace/mode/json");
+    </script>
+
+    <script>
+        $("#validate").on("click", function (e) {
+            var clicked = this;
+
+            if ($(clicked).data("clicked")) {
+                return true;
+            }
+
+            $(clicked).data("clicked", true);
+            e.preventDefault();
+
+            var getValue;
+            var setValue;
+            var url;
+
+            if ($(clicked).attr("id") == "validate") {
+                getValue = "jwt";
+                setValue = "raw";
+                url = "/Jwt/Validate";
+            }
+
+            $.ajax({
+                type: "POST",
+                url: url,
+                data: JSON.stringify({ data: ace.edit(getValue).getValue() }),
+                dataType: "json",
+                contentType: "application/json",
+                success: function(data) {
+                    if (data.error) {
+                        $("#alert-msg").html(data.error);
+
+                        $("#alert").show();
+                        return;
+                    }
+                    
+                    ace.edit(setValue).setValue(data.data);
+                },
+                complete: function() {
+                    $(clicked).data("clicked", false);
+                }                
+            });  
+
+            return true;
+        });                  
+    </script>
+}
