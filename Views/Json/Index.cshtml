@@ -1,0 +1,137 @@
+@{
+    Layout = "_DecodersLayout";
+}
+<div class="row">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+             <h3 class="panel-title">Original</h3>
+        </div>
+        <div class="panel-body">
+            <div id="original"></div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <a asp-controller="Json" asp-action="PrettyPrint" class="btn btn-default" role="button" id="prettyPrint">Pretty Print</a>
+    <a asp-controller="Json" asp-action="OneLine" class="btn btn-default" role="button" id="oneLine">All on One Line</a>
+    <a class="btn btn-default" role="button" id="downEditor"><span class="fa fa-chevron-down"></span>  Editor</a>
+    <a class="btn btn-default" role="button" id="upEditor"><span class="fa fa-chevron-up"></span>  Editor</a>
+</div>
+<br/>
+
+<div class="row">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+             <h3 class="panel-title">Output</h3>
+        </div>
+        <div class="panel-body">
+            <div id="output"></div>
+            <div id="editor" style="display: none"></div>
+        </div>
+    </div>
+</div>
+
+
+    <style>
+#original {
+    height: 300px;
+}
+
+#output {
+    height: 300px;
+}
+
+#editor {
+    height: 300px;
+}
+    </style>
+
+@section scripts {
+<script src="/ace-min-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>
+    <link href="/jsoneditor/jsoneditor.min.css" rel="stylesheet" type="text/css">
+    <script src="/jsoneditor/jsoneditor.min.js"></script>
+
+    <script>
+        var original = ace.edit("original");
+        original.setTheme("ace/theme/twilight");
+        original.session.setMode("ace/mode/json");
+
+        var output = ace.edit("output");
+        output.setTheme("ace/theme/twilight");        
+        output.session.setMode("ace/mode/json");
+
+        var container = document.getElementById("editor");
+        var options = {};
+        var editor = new JSONEditor(container, options);        
+    </script>
+
+    <script>
+        $("#downEditor").on("click", function (e) {                    
+            $("#output").hide();
+            $("#editor").hide();
+            
+            $("#editor").show();
+
+            editor.set(JSON.parse(ace.edit("original").getValue()));
+        });
+
+        $("#upEditor").on("click", function (e) {                    
+            $("#output").hide();
+            $("#editor").hide();
+            
+            $("#editor").show();
+
+            ace.edit("original").setValue(JSON.stringify(editor.get()));
+        });
+
+        $("#prettyPrint, #oneLine").on("click", function (e) {
+            var clicked = this;
+
+            if ($(clicked).data("clicked")) {
+                return true;
+            }
+
+            $(clicked).data("clicked", true);
+            e.preventDefault();
+
+            var getValue = "original";
+            var setValue = "output";
+            var url;
+
+            if ($(clicked).attr("id") == "prettyPrint") {
+                url = "/Json/PrettyPrint";
+            } else if ($(clicked).attr("id") == "oneLine") {
+                url = "/Json/OneLine";
+            }
+
+            $.ajax({
+                type: "POST",
+                url: url,
+                data: JSON.stringify({ data: ace.edit(getValue).getValue() }),
+                dataType: "json",
+                contentType: "application/json",
+                success: function(data) {
+                    if (data.error) {
+                        $("#alert-msg").html(data.error);
+
+                        $("#alert").show();
+                        return;
+                    }
+                    
+                    $("#output").hide();
+                    $("#editor").hide();
+
+                    $("#output").show();
+
+                    ace.edit(setValue).setValue(data.data);
+                },
+                complete: function() {
+                    $(clicked).data("clicked", false);
+                }                
+            });  
+
+            return true;
+        });                  
+    </script>
+}
