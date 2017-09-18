@@ -73,11 +73,11 @@
             if ($(clicked).attr("id") == "encode") {
                 getValue = "decoded";
                 setValue = "encoded";
-                url = "/Url/Encode";
+                url = "/Html/Encode";
             } else if ($(clicked).attr("id") == "decode") {
                 getValue = "encoded";
                 setValue = "decoded";
-                url = "/Url/Decode";             
+                url = "/Html/Decode";             
             }
 
             $.ajax({
