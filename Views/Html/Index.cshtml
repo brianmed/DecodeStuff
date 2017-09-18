@@ -1,0 +1,107 @@
+@{
+    Layout = "_DecodersLayout";
+}
+<div class="row">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+             <h3 class="panel-title">Encoded</h3>
+        </div>
+        <div class="panel-body">
+            <div id="encoded"></div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <a asp-controller="Html" asp-action="Decode" class="btn btn-default" role="button" id="decode">Decode</a>
+</div>
+<br/>
+
+<div class="row">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+             <h3 class="panel-title">Decoded</h3>
+        </div>
+        <div class="panel-body">
+            <div id="decoded"></div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <a asp-controller="Html" asp-action="Encode" class="btn btn-default" role="button" id="encode">Encode</a>
+</div>
+
+    <style>
+        #encoded {
+            height: 300px;
+        }
+
+        #decoded {
+            height: 300px;
+        }
+    </style>
+
+@section scripts {
+    <script src="ace-min-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>
+
+    <script>
+        var encoded = ace.edit("encoded");
+        encoded.setTheme("ace/theme/twilight");
+
+        var decoded = ace.edit("decoded");
+        decoded.setTheme("ace/theme/twilight");
+
+        //editor.session.setMode("ace/mode/json");
+    </script>
+
+    <script>
+        $("#encode, #decode").on("click", function (e) {
+            var clicked = this;
+
+            if ($(clicked).data("clicked")) {
+                return true;
+            }
+
+            $(clicked).data("clicked", true);
+            e.preventDefault();
+
+            var getValue;
+            var setValue;
+            var url;
+
+            if ($(clicked).attr("id") == "encode") {
+                getValue = "decoded";
+                setValue = "encoded";
+                url = "/Url/Encode";
+            } else if ($(clicked).attr("id") == "decode") {
+                getValue = "encoded";
+                setValue = "decoded";
+                url = "/Url/Decode";             
+            }
+
+            $.ajax({
+                type: "POST",
+                url: url,
+                data: JSON.stringify({ data: ace.edit(getValue).getValue() }),
+                dataType: "json",
+                contentType: "application/json",
+                success: function(data) {
+                    if (data.error) {
+                        $("#alert-msg").html(data.error);
+
+                        $("#alert").show();
+                        return;
+                    }
+                    
+                    ace.edit(setValue).setValue(data.data);
+                },
+                complete: function() {
+                    $(clicked).data("clicked", false);
+                }                
+            });  
+
+            return true;
+        });                  
+    </script>
+}
